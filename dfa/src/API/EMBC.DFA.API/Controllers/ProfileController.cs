@@ -12,9 +12,6 @@ using AutoMapper;
 using EMBC.DFA.API.ConfigurationModule.Models;
 using EMBC.DFA.API.ConfigurationModule.Models.Dynamics;
 using EMBC.DFA.API.Services;
-using EMBC.ESS.Shared.Contracts;
-using EMBC.ESS.Shared.Contracts.Events;
-using EMBC.Utilities.Messaging;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -29,24 +26,18 @@ namespace EMBC.DFA.API.Controllers
     public class ProfileController : ControllerBase
     {
         private readonly IHostEnvironment env;
-        private readonly IMessagingClient messagingClient;
         private readonly IMapper mapper;
-        private readonly IProfileInviteService profileInviteService;
         private readonly IConfigurationHandler handler;
 
         private string currentUserId => User.FindFirstValue(JwtRegisteredClaimNames.Sub);
 
         public ProfileController(
             IHostEnvironment env,
-            IMessagingClient messagingClient,
             IMapper mapper,
-            IProfileInviteService profileInviteService,
             IConfigurationHandler handler)
         {
             this.env = env;
-            this.messagingClient = messagingClient;
             this.mapper = mapper;
-            this.profileInviteService = profileInviteService;
             this.handler = handler;
         }
 
@@ -134,26 +125,6 @@ namespace EMBC.DFA.API.Controllers
             var userProfile = BcscUserInfoMapper.MapBcscUserInfoToProfile(User.Identity?.Name, JsonDocument.Parse(User.FindFirstValue("userInfo")));
             return userProfile;
         }
-
-        [HttpPost("invite-anonymous")]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [AllowAnonymous]
-        public async Task<IActionResult> Invite(InviteRequest request)
-        {
-            var file = (await messagingClient.Send(new EvacuationFilesQuery { FileId = request.FileId })).Items.SingleOrDefault();
-            if (file == null) return NotFound(request.FileId);
-            await messagingClient.Send(new InviteRegistrantCommand { RegistrantId = file.PrimaryRegistrantId, Email = request.Email });
-            return Ok();
-        }
-
-        [HttpPost("current/join")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<bool>> ProcessInvite(InviteToken token)
-        {
-            return Ok(await profileInviteService.ProcessInvite(token.Token, currentUserId));
-        }
     }
 
     /// <summary>
@@ -179,7 +150,7 @@ namespace EMBC.DFA.API.Controllers
     /// <summary>
     /// Base class for profile data conflicts
     /// </summary>
-    [JsonConverter(typeof(PolymorphicJsonConverter<ProfileDataConflict>))]
+    //[JsonConverter(typeof(PolymorphicJsonConverter<ProfileDataConflict>))]
     [KnownType(typeof(DateOfBirthDataConflict))]
     [KnownType(typeof(NameDataConflict))]
     [KnownType(typeof(AddressDataConflict))]

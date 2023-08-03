@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using AutoMapper;
 using EMBC.DFA.API.ConfigurationModule.Models.Dynamics;
 using EMBC.DFA.API.Services;
-using EMBC.Utilities.Messaging;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -25,18 +24,15 @@ namespace EMBC.DFA.API.Controllers
     public class ApplicationController : ControllerBase
     {
         private readonly IHostEnvironment env;
-        private readonly IMessagingClient messagingClient;
         private readonly IMapper mapper;
         private readonly IConfigurationHandler handler;
 
         public ApplicationController(
             IHostEnvironment env,
-            IMessagingClient messagingClient,
             IMapper mapper,
             IConfigurationHandler handler)
         {
             this.env = env;
-            this.messagingClient = messagingClient;
             this.mapper = mapper;
             this.handler = handler;
         }

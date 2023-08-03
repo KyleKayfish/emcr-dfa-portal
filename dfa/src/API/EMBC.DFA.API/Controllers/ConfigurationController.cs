@@ -10,10 +10,8 @@ using AutoMapper;
 using EMBC.DFA.API.ConfigurationModule.Models;
 using EMBC.DFA.API.ConfigurationModule.Models.Dynamics;
 using EMBC.DFA.API.Mappers;
-using EMBC.ESS.Shared.Contracts.Metadata;
 using EMBC.Utilities.Caching;
 using EMBC.Utilities.Extensions;
-using EMBC.Utilities.Messaging;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -32,7 +30,6 @@ namespace EMBC.DFA.API.Controllers
     public class ConfigurationController : ControllerBase
     {
         private readonly IConfiguration configuration;
-        private readonly IMessagingClient client;
         private readonly IMapper mapper;
         private readonly ICache cache;
         private readonly IHostEnvironment environment;
@@ -40,10 +37,9 @@ namespace EMBC.DFA.API.Controllers
         private readonly IConfigurationHandler handler;
         private readonly AutoMapper.MapperConfiguration mapperConfig;
 
-        public ConfigurationController(IConfiguration configuration, IMessagingClient client, IMapper mapper, ICache cache, IHostEnvironment environment, IConfigurationHandler handler)
+        public ConfigurationController(IConfiguration configuration, IMapper mapper, ICache cache, IHostEnvironment environment, IConfigurationHandler handler)
         {
             this.configuration = configuration;
-            this.client = client;
             this.mapper = mapper;
             this.cache = cache;
             this.environment = environment;
@@ -117,7 +113,7 @@ namespace EMBC.DFA.API.Controllers
             return BadRequest(new ProblemDetails { Detail = "empty query parameter" });
         }
 
-        [HttpGet("codes/communities")]
+        /*[HttpGet("codes/communities")]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<CommunityCode>>> GetCommunities([FromQuery] string? stateProvinceId, [FromQuery] string? countryId, [FromQuery] CommunityType?[] types)
@@ -132,9 +128,9 @@ namespace EMBC.DFA.API.Controllers
             if (types != null && types.Any()) items = items.Where(i => types.Any(t => t.ToString().Equals(i.Type.ToString(), StringComparison.InvariantCultureIgnoreCase)));
 
             return Ok(mapper.Map<IEnumerable<CommunityCode>>(items));
-        }
+        }*/
 
-        [HttpGet("codes/stateprovinces")]
+        /*[HttpGet("codes/stateprovinces")]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<Code>>> GetStateProvinces([FromQuery] string? countryId)
@@ -147,7 +143,7 @@ namespace EMBC.DFA.API.Controllers
             if (!string.IsNullOrEmpty(countryId)) items = items.Where(i => i.CountryCode == countryId);
 
             return Ok(mapper.Map<IEnumerable<Code>>(items));
-        }
+        }*/
 
         [HttpGet("codes/countries")]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -162,30 +158,6 @@ namespace EMBC.DFA.API.Controllers
             mapper.Map<IEnumerable<Contact>>(cntr);
 
             return Ok(null);
-        }
-
-        [HttpGet("security-questions")]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<string[]>> GetSecurityQuestions()
-        {
-            var questions = await cache.GetOrSet(
-                "securityquestions",
-                async () => (await client.Send(new SecurityQuestionsQuery())).Items,
-                TimeSpan.FromMinutes(15));
-            return Ok(questions);
-        }
-
-        [HttpGet("outage-info")]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<OutageInformation>> GetOutageInfo()
-        {
-            var outageInfo = await cache.GetOrSet(
-                "outageinfo",
-                async () => (await client.Send(new OutageQuery { PortalType = PortalType.Registrants })).OutageInfo,
-                TimeSpan.FromSeconds(30));
-            return Ok(mapper.Map<OutageInformation>(outageInfo));
         }
     }
 

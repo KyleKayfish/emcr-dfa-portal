@@ -147,7 +147,6 @@ namespace EMBC.DFA.API
                 document.GenerateAbstractProperties = true;
             });
 
-            services.AddTransient<IProfileInviteService, ProfileInviteService>();
             services.AddTransient<IConfigurationHandler, Handler>();
             services.AddTransient<IDynamicsGateway, DynamicsGateway>();
             services.Configure<ADFSTokenProviderOptions>(configuration.GetSection("Dynamics:ADFS"));

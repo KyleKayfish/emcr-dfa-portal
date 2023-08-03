@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using EMBC.ESS.Shared.Contracts;
 using EMBC.Utilities.Telemetry;
 using Google.Protobuf;
 using Grpc.Core;
